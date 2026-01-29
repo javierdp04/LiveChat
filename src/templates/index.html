@@ -1,0 +1,48 @@
+<html>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <body>
+        <h1 id="tittle">Log-In</h1>
+        <div id="landing">
+            <input id="user" placeholder="usuario" type="text">
+            <button id= "joinButton" style="width: 80px; height: 20px;">Unirse</button>
+        </div>
+        <div id="chat" style="display:none">
+            <ul id="messages">
+            </ul>
+            <input type="text" id="message" placeholder="Write your message">
+        </div>
+        <script>
+            const socket = io({autoConnect: false});
+
+            document.getElementById("joinButton").addEventListener("click", function() {
+                let username = document.getElementById("user").value;
+
+                socket.connect();
+
+                socket.on("connect", function() {
+                    socket.emit("user_join", username);
+                });
+                document.getElementById("landing").style.display = "none"
+                document.getElementById("tittle").textContent = "Chat"
+                document.getElementById("chat").style.display = "block"
+            });
+
+            document.getElementById("message").addEventListener("keyup", function(event){
+                if(event.key == "Enter"){
+                    let message = document.getElementById("message").value;
+                    socket.emit("new_message", message);
+                    document.getElementById("message").value = "";             
+                }
+            })
+
+            socket.on("chat", function(data){
+                let ul = document.getElementById("messages");
+                let li = document.createElement("li");
+                li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
+                ul.appendChild(li);
+                ul.scrollTop = ul.scrollHeight; //ALWAYS FOCUS ON THE BOTTOM OF THE CHAT
+            })
+
+        </script>
+    </body>
+</html>
